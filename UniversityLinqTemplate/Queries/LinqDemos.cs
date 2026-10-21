@@ -97,7 +97,8 @@ namespace UniversityLinqTemplate.Queries
             var readers = db.Readers
                 .Include(r => r.Loans)
                     .ThenInclude(l => l.Book)
-                        .ThenInclude(b => b!.Card)
+                .Include(r => r.Loans)
+                    .ThenInclude(l => l.Book!.Card)
                 .ToList();
 
             foreach (var reader in readers)
