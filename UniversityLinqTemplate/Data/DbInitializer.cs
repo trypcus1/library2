@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using UniversityLinqTemplate.Models;
 
-using UniversityLinqTemplate.Models;
-
 namespace UniversityLinqTemplate.Data
 {
     public static class DbInitializer
