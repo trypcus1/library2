@@ -1,0 +1,21 @@
+## Сборка и временные файлы .NET
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Папка кэша Visual Studio
+.vs/
+.vscode/
+
+## База данных SQLite (студенты должны создать свою локально!)
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+## Логи и отчеты
+*.log
+TestResults/
