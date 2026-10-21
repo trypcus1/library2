@@ -8,7 +8,7 @@ namespace UniversityLinqTemplate.Queries
 {
     public static class LinqDemos
     {
-        // 1. ФИЛЬТРАЦИЯ + СОРТИРОВКА (Where с &&/||, OrderByDescending + ThenBy)
+        // 1. ФИЛЬТРАЦИЯ + СОРТИРОВКА
         public static void DemoFilteringAndSorting(UniversityContext db)
         {
             Console.WriteLine("\n=== 1. Книги жанра 'Роман' или 'Антиутопия', изданные после 1900 г. ===");
@@ -24,7 +24,7 @@ namespace UniversityLinqTemplate.Queries
                 Console.WriteLine($"  {b.PublishYear} — '{b.Title}' ({b.Genre}), автор: {b.Author}");
         }
 
-        // 2. ПРОЕКЦИЯ (Select в анонимный тип)
+        // 2. ПРОЕКЦИЯ
         public static void DemoProjection(UniversityContext db)
         {
             Console.WriteLine("\n=== 2. Проекция: читатель, книга и срок выдачи (в днях) ===");
@@ -35,9 +35,9 @@ namespace UniversityLinqTemplate.Queries
                 .Select(l => new
                 {
                     ReaderName = l.Reader!.FullName,
-                    BookTitle = l.Book!.Title,
-                    DaysHeld = (l.ReturnDate ?? DateTime.Now).Subtract(l.LoanDate).Days,
-                    Returned = l.ReturnDate != null
+                    BookTitle  = l.Book!.Title,
+                    DaysHeld   = (l.ReturnDate ?? DateTime.Now).Subtract(l.LoanDate).Days,
+                    Returned   = l.ReturnDate != null
                 })
                 .ToList();
 
@@ -48,17 +48,17 @@ namespace UniversityLinqTemplate.Queries
             }
         }
 
-        // 3. АГРЕГАЦИЯ (Count, Sum, Average, Min, Max)
+        // 3. АГРЕГАЦИЯ
         public static void DemoAggregations(UniversityContext db)
         {
             Console.WriteLine("\n=== 3. Агрегатные вычисления по фонду и выдачам ===");
 
-            int totalBooks = db.Books.Count();
-            int activeLoans = db.Loans.Count(l => l.ReturnDate == null);
+            int totalBooks     = db.Books.Count();
+            int activeLoans    = db.Loans.Count(l => l.ReturnDate == null);
             decimal totalFines = db.Loans.Sum(l => l.Fine);
             double avgLoanDays = db.Loans.Average(l => (l.ReturnDate ?? DateTime.Now).Subtract(l.LoanDate).Days);
-            int oldestBook = db.Books.Min(b => b.PublishYear);
-            int newestBook = db.Books.Max(b => b.PublishYear);
+            int oldestBook     = db.Books.Min(b => b.PublishYear);
+            int newestBook     = db.Books.Max(b => b.PublishYear);
 
             Console.WriteLine($"  Всего книг в фонде:           {totalBooks}");
             Console.WriteLine($"  Выдано и не возвращено:       {activeLoans}");
@@ -68,7 +68,7 @@ namespace UniversityLinqTemplate.Queries
             Console.WriteLine($"  Самая новая книга:            {newestBook} г.");
         }
 
-        // 4. ГРУППИРОВКА (GroupBy с агрегатами)
+        // 4. ГРУППИРОВКА
         public static void DemoGrouping(UniversityContext db)
         {
             Console.WriteLine("\n=== 4. Группировка книг по жанру (Count + Average) ===");
@@ -77,9 +77,9 @@ namespace UniversityLinqTemplate.Queries
                 .GroupBy(b => b.Genre)
                 .Select(g => new
                 {
-                    Genre = g.Key,
+                    Genre     = g.Key,
                     BookCount = g.Count(),
-                    AvgYear = g.Average(b => b.PublishYear)
+                    AvgYear   = g.Average(b => b.PublishYear)
                 })
                 .OrderByDescending(g => g.BookCount)
                 .ThenBy(g => g.Genre)
@@ -89,14 +89,12 @@ namespace UniversityLinqTemplate.Queries
                 Console.WriteLine($"  Жанр '{item.Genre}': книг = {item.BookCount}, средний год = {item.AvgYear:F0}");
         }
 
-        // 5. СВЯЗИ + ЖАДНАЯ ЗАГРУЗКА (Include + ThenInclude)
+        // 5. СВЯЗИ + ЖАДНАЯ ЗАГРУЗКА — ИСПРАВЛЕНО
         public static void DemoJoinsAndIncludes(UniversityContext db)
         {
             Console.WriteLine("\n=== 5. Читатели и их взятые книги (Include / ThenInclude) ===");
 
             var readers = db.Readers
-                .Include(r => r.Loans)
-                    .ThenInclude(l => l.Book)
                 .Include(r => r.Loans)
                     .ThenInclude(l => l.Book!.Card)
                 .ToList();
@@ -112,7 +110,9 @@ namespace UniversityLinqTemplate.Queries
 
                 foreach (var loan in reader.Loans)
                 {
-                    var book = loan.Book!;
+                    var book = loan.Book;
+                    if (book == null) continue;
+
                     var card = book.Card;
                     var shelf = card != null ? card.ShelfLocation : "не указано";
                     var status = loan.ReturnDate == null ? "на руках" : "возвращена";
